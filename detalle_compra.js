@@ -1,6 +1,6 @@
 const { faker } = require('@faker-js/faker');
 const { MongoClient } = require('mongodb');
-const uri = "mongodb+srv://edbravo:Sena1234@cluster0.ushwfet.mongodb.net/"
+const uri = "mongodb+srv://Alexa:_123@cluster0.it2vlnf.mongodb.net/"
 
 async function BasedeDatos(){
     const cliente = new MongoClient(uri);
