@@ -1,166 +1,125 @@
-const { faker } = require('@faker-js/faker');
- const { MongoClient } = require('mongodb');
-const uri = "mongodb+srv://edbravo:Sena1234@cluster0.ushwfet.mongodb.net/"
+const readline = require('readline');
+const compra = require('./compra');
+const detalle_compra = require('./detalle_compra');
+const existencias = require('./existencias');
+var coleccion;
 
-//Funcion para crear la base de datos con una collection
-async function crearBasedeDatos() {
-    const cliente = new MongoClient(uri);
-    try {
-        await cliente.connect();
-        const result = await cliente.db('soft_Imperio').createCollection("Roles", {
-            validator: {
-                $jsonSchema: {
-                    bsonType: 'object',
-                    title: "SchemaRoles",
-                    required: [
-                        "_id_Rol",
-                        "nombreRol"
-                    ],
-                    properties: {
-                        "_id_Rol": {
-                            "bsonType": "int"
-                        },
-                        "nombreRol": {
-                            "bsonType": "string"
-                        }
-                    }
-                }
-            }
-        })
-        if (result) {
-            console.log("Se creo correctamente la Base de Datos");
-        } else {
-            console.log("Error al crear la Base de Datos");
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  function displayMenuColections() {
+    console.log('1. Compra');
+    console.log('2. Detalle Compra');
+    console.log('3. Existencias');
+  }
+  
+  function askOption() {
+
+    displayMenuColections();
+    rl.question('seleccione colección: ', (option2) => {
+      
+        switch (option2) {
+            case '1':
+              coleccion = compra;
+              askOperation();
+              break;
+            case '2':
+              coleccion = detalle_compra;
+              askOperation();
+              break;
+            case '3':
+              coleccion = existencias;
+              askOperation();
+              break;
+            default:
+                console.log('Colección invalida!');
+                askOption();
+                break;  
         }
+    });
 
-    } catch (e) {
-        console.log(e);
-    } finally {
-        await cliente.close();
-    }
-}
-//crearBasedeDatos();
+  }
 
-//Funcion para insertar los roles
-async function insertarRoles() {
-    const cliente = new MongoClient(uri);
-    try {
-        await cliente.connect();
-        const result = await cliente.db('Soft_Imperio').collection('Roles').insertOne({
-            _id_Rol: 02,
-            nombreRol: "Colaborador"
-        })
-
-    } catch (e) {
-        console.log(e);
-    } finally {
-        await cliente.close();
-    }
-}
-//insertarRoles();
-
-async function crearColeccion() {
-    const cliente = new MongoClient(uri);
-    try {
-        await cliente.connect();
-        const result = await cliente.db('Soft_Imperio').createCollection("Usuarios", {
-            validator: {
-                $jsonSchema: {
-                    bsonType: 'object',
-                    title: "SchemaUsuarios",
-                    required: [
-                        "id_usuario",
-                        "_id_Rol",
-                        "nombre",
-                        "documento",
-                        "email",
-                        "telefono",
-                        "password",
-                        "estado"
-                    ],
-                    properties: {
-                        "id_usuario": {
-                            "bsonType": "int"
-                        },
-                        "_id_Rol": {
-                            "bsonType": "int"
-                        },
-                        "nombre": {
-                            "bsonType": "string"
-                        },
-                        "documento": {
-                            "bsonType": "int"
-                        },
-                        "email": {
-                            "bsonType": "string"
-                        },
-                        "telefono": {
-                            "bsonType": "int"
-                        },
-                        "foto": {
-                            "bsonType": "string"
-                        },
-                        "password": {
-                            "bsonType": "string"
-                        },
-                        "estado": {
-                            "bsonType": "string"
-                        }
-                    }
-                }
-            }
-        })
-        if (result) {
-            console.log("Se creo la collection correctamente");
-        } else {
-            console.log("Error al crear la collection");
+  function askOperation(){
+    displayMenu();
+    rl.question('Seleccione una opción: ', (option) => {
+        processOption(option);
+        if (option !== '0') {
+          console.log('\n');
+          askOperation();
+          fin=1;
         }
-    } catch (e) {
-        console.log(e);
-    } finally {
-        await cliente.close();
+      });
+  }
+  
+  function displayMenu() {
+    console.log('1. InsertOne');
+    console.log('2. InsertMany');
+    console.log('3. FindOne');
+    console.log('4. FindMany');
+    console.log('5. UpdateMany');
+    console.log('6. UpdateOne');
+    console.log('7. DeleteMany');
+    console.log('8. DeleteOne');
+    console.log('9. RunPipelineQuery');
+    console.log('10. CreateCollection');
+    console.log('11. DropCollection');
+    console.log('0. Exit');
+  }
+
+  function processOption(option) {
+    switch (option) {
+      case '1':
+        coleccion.insertOne();
+        break;
+      case '2':
+        rl.question('Ingrese numero de documentos a crear: ', (numElements) => {
+            coleccion.insertMany(numElements);
+          });
+        break;
+      case '3':
+        rl.question('Ingrese id: ', (id_document) => {
+          coleccion.findOne(parseInt(id_document,10));
+        });
+        break;
+      case '4':
+        coleccion.findMany();
+        break;
+      case '5':
+        coleccion.updateMany();
+        break;  
+      case '6':
+        rl.question('Ingrese el id del documento a eliminar: ', (documentId) => {
+          coleccion.updateOne(parseInt(documentId,10));
+        });
+        break;   
+      case '7':
+        coleccion.deleteMany();
+        break;
+      case '8':
+        rl.question('Ingrese el id del documento a eliminar: ', (documentId) => {
+            coleccion.deleteOne(parseInt(documentId,10));
+          });
+        break; 
+      case '9':
+        coleccion.runPipelineQuery();
+        break;    
+      case '10':
+        coleccion.crearColeccion();  
+        break; 
+      case '11':
+        coleccion.dropCollection();
+        break;   
+      case '0':
+        rl.close();
+        break;
+      default:
+        console.log('Invalid option!');
+        break;
     }
-}
-//crearColeccion();
+  }
 
-
-// parte desde tabla compra
-async function crearBasedeDatos(){
-    const cliente = new MongoClient(uri);
-    try{
-        await cliente.connect();
-        const result = await cliente.db('Soft_Imperio').createCollection("Compra", {
-            validator: {
-                bsonType: 'object',
-                title: "SchemaCompra",
-                required: [
-                    "_id_Compra",
-                    "fechaCompra",
-                    "totalCompra"
-                ],
-                properties: {
-                    "_id_Compra": {
-                        "bsonType": "int"
-                    },
-                    "fechaCompra": {
-                        "bsonType": "date"
-                    },
-                    "totalCompra": {
-                        "bsonType": "float"
-                    }
-                }
-            }
-        })
-        if (result) {
-            console.log("Se creo correctamente la Base de Datos");
-        } else {
-            console.log("Error al crear la Base de Datos");
-        }
-
-    } catch (e) {
-        console.log(e);
-    } finally { 
-        await cliente.close();
-    }
-}
-//crearBasedeDatos();
+  console.log('Bienvenido a la aplicación de consola, Crud con Mongodb!');
+  askOption();
